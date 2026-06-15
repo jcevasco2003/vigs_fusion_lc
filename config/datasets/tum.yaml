@@ -1,0 +1,38 @@
+gs_slam_node:
+  ros__parameters:
+
+    use_sim_time: true
+    use_depth_registration: true
+    publish_imu_camera_tf: false
+    publish_world_to_map_tf: false
+
+    # The bag publishes raw sensor_msgs/Image on /camera/rgb/image_color.
+    # Use raw transport here; compressed would expect /camera/rgb/image_color/compressed.
+    color_transport: raw
+    depth_transport: raw
+
+    # RGB
+    color_topic: /camera/rgb/image_color
+    camera_info_topic: /camera/rgb/camera_info
+
+    # Depth
+    depth_topic: /camera/depth_registered/image_rect
+    depth_camera_info_topic: /camera/depth/camera_info
+    depth_input_topic: /camera/depth/image
+    depth_registration_target_frame: openni_rgb_optical_frame
+    depth_registration_source_frame: openni_depth_optical_frame
+    imu_camera_parent_frame: Kinect
+    imu_camera_child_frame: openni_camera
+    imu_camera_translation: [0.0, 0.0, 0.0]
+    imu_camera_rotation: [0.0, 0.0, 0.0, 1.0]
+    world_to_map_parent_frame: world
+    world_to_map_child_frame: map
+    world_to_map_translation: [0.0, 0.0, 0.0]
+    world_to_map_rotation: [0.0, 0.0, 0.0, 1.0]
+
+    world_frame_id: world
+    imu_frame_id_fallback: kinect
+
+    # IMU
+    imu_topic: /imu
+    imu_preint_topic: /imu

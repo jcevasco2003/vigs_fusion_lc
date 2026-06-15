@@ -1,0 +1,218 @@
+gs_slam_node:
+  ros__parameters:
+
+    # ============================================================
+    # SLAM PROFILE
+    # ============================================================
+    # Perfil global del SLAM. Controla parámetros y estrategias de selección de puntos, inicialización y densificación.
+    # Opciones típicas:
+    #   - sobel
+    #   - laplacian
+    #   - canny
+    #   - vigs_fusion
+    #   - fgs
+    #   - custom
+    slam_profile: sobel
+
+
+    # ============================================================
+    # INITIALIZATION / DENSIFICATION STRATEGIES
+    # ============================================================
+    # Estrategias usadas para inicialización y densificación de gausianas.
+    # Deben ser coherentes entre sí si usas pipelines frequency-guided.
+    #
+    # Opciones:
+    #   - vigs_fusion (default recomendado)
+    #   - fgs (frequency guided SLAM clásico)
+    #   - sobel
+    #   - laplacian
+    #   - canny
+    #   - fast_placeholder (debug / baseline)
+    initialization_strategy: sobel
+    densification_strategy: sobel
+
+    # Forzar pipelines frequency-guided (override lógico de strategies)
+    frequency_guided_initialization: false
+    frequency_guided_densification: false
+
+
+    # ============================================================
+    # FREQUENCY / FILTERING PARAMETERS
+    # ============================================================
+    # Controlan el análisis de frecuencia de la imagen para selección
+    # de puntos y densificación.
+
+    strategy_sample_high_px: 1   # sampling en regiones high-frequency
+    strategy_sample_low_px: 4    # sampling en regiones low-frequency
+
+    strategy_scale_high: 0.4     # escala gaussiana en high-frequency
+    strategy_scale_low: 1.0       # escala gaussiana en low-frequency
+
+    # sigma relativo para high-pass filter (normalizado a tamaño imagen)
+    strategy_highpass_sigma_ratio: 0.06
+
+
+    # ============================================================
+    # EDGE DETECTION (CANNY)
+    # ============================================================
+    canny_threshold1: 50.0   # threshold bajo
+    canny_threshold2: 150.0  # threshold alto
+
+
+    # ============================================================
+    # GRADIENT COMPUTATION
+    # ============================================================
+    # Si true: usa OpenCV CUDA DerivFilter (más rápido)
+    # Si false: usa kernel Sobel custom (más controlable)
+    use_deriv_filters: true
+
+
+    # ============================================================
+    # SLAM OPTIMIZATION PARAMETERS
+    # ============================================================
+    pose_iterations: 50       # iteraciones optimización pose
+    gaussian_iterations: 30    # iteraciones update gaussiano
+
+    eta_pose: 1e-5            # learning rate pose
+    eta_gaussian: 5e-4        # learning rate gaussian update
+
+    gauss_init_size_px: 3     # tamaño inicial de gaussian en px
+
+
+    # ============================================================
+    # IMAGE PROCESSING
+    # ============================================================
+    # Factor de downsampling:
+    #   1 -> full resolution
+    #   2 -> half resolution
+    #   4 -> quarter resolution
+    #   etc (potencias de 2)
+    downsample_factor: 2
+
+
+    # ============================================================
+    # IMU NOISE MODEL
+    # ============================================================
+    acc_n: 0.2
+    gyr_n: 0.0002
+    acc_w: 0.02
+    gyr_w: 2e-7
+
+
+    # ============================================================
+
+    # GEOMETRIC / TRACKING CONSTRAINTS
+    # ============================================================
+    covisibility_threshold: 0.85
+    submap_dist_threshold_m: 1.0      # threshold de distancia para transición de submapa (metros)
+    submap_rot_threshold_deg: 80.0   # threshold de rotación para transición de submapa (grados)
+
+    # ============================================================
+    # LOOP CLOSURE (ASYNC) PARAMETERS
+    # ============================================================
+    loop:
+      self_similarity_percentile: 50           # percentil p para self-similarity
+      min_votes_for_loop_closure: 2           # número mínimo de votos para considerar candidato
+      loop_min_submap_difference: 0           # rechazar si current-historical <= este valor
+      max_descriptor_batch_size: 1024         # batch size para GEMM en detección
+      # Umbral para verificación de loop closure (distancia en metros)
+      loop_verify_max_distance: 2.0
+      # Umbral para verificación de loop closure (rotación en grados)
+      loop_verify_max_rotation: 150.0
+      registration:
+        loop_confidence_threshold: 0.000015
+        min_similarity_floor: 0.55
+        max_submaps_to_compare: 10
+        max_keyframes_per_submap: 12
+        min_submap_gap: 2
+        imu_max_anchor_distance_m: 8.0
+        imu_max_anchor_rotation_deg: 135.0
+        imu_max_uncertainty_score: 30.0
+        geometric_overlap_threshold: 0.2
+      open3d:
+        max_points: 20000
+        min_points: 30
+        voxel_size_m: 0.03
+        min_downsampled_points: 20
+        normal_radius_scale: 2.0
+        normal_max_nn: 30
+        fpfh_radius_scale: 5.0
+        fpfh_max_nn: 100
+        ransac_distance_scale: 1.5
+        ransac_n: 4
+        ransac_max_iteration: 1000000
+        ransac_confidence: 0.99
+        icp_threshold_scale: 0.8
+        icp_min_distance_m: 0.3
+        icp_max_iteration: 30
+        pgo_max_translation_apply_m: 1.0
+        pgo_max_rotation_apply_deg: 30.0
+      apply_pgo_updates: true
+      # Choose PGO backend: 'ceres' (default) or 'open3d'
+      pgo_backend: ceres
+      diagnostics_mode: false
+
+    # Modo de evaluación exponencial en kernels CUDA:
+    #   DEFAULT -> usa __expf
+    #   TAYLOR  -> usa aproximación de Taylor (menor costo computacional)
+    GPU_EXP_EVALUATION: DEFAULT
+
+    w_depth: 1.0   # peso reproyección depth
+    w_dist: 0.1    # peso regularización espacial
+
+
+    # ============================================================
+    # IMU REPROJECTION / BIAS HANDLING
+    # ============================================================
+    imu_reprop_ba_thresh: 0.1   # bias accel threshold
+    imu_reprop_bg_thresh: 0.01  # bias gyro threshold
+
+
+    # ============================================================
+    # IMU INITIALIZATION
+    # ============================================================
+    imu_init_samples: 100       # muestras iniciales para bias estimation
+    imu_dt_warn_max_s: 0.05     # warning si dt IMU excede esto
+
+
+    # ============================================================
+    # IMU VALIDATION RANGES (OUTLIER REJECTION)
+    # ============================================================
+    imu_acc_norm_min: 1.0
+    imu_acc_norm_max: 30.0
+    imu_gyro_norm_max: 10.0
+
+
+    # ============================================================
+    # DIAGNOSTICS / SAFETY CHECKS
+    # ============================================================
+    diag_state_jump_pos_thresh_m: 0.20
+    diag_state_jump_rot_thresh_deg: 5.0
+    diag_proc_time_domain_abs_limit_s: 10.0
+
+
+    # ============================================================
+    # OUTPUT CONTROL
+    # ============================================================
+    publish_pointcloud: false
+    publish_reconstructed_images: false
+    viewer: true
+    visualize_current_submap: false
+    # Test sintético de loop closure (se configura en la sección loop):
+    # loop.diagnostics_mode: true
+    metrics_print_interval_frames: 50
+
+    # Si true: corre SOLO con primera frame RGBD + pose identidad
+    test_gaussians_only: false
+
+
+    # ============================================================
+    # FRAME CONFIG
+    # ============================================================
+    world_frame_id: map
+
+# Configuration for external metrics node so it can read common SLAM params
+slam_metrics_node:
+  ros__parameters:
+    # How often (in samples) the metrics node prints ATE summary. 1000 -> every 1000 samples
+    ate_print_period: 50

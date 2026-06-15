@@ -1,0 +1,49 @@
+gs_slam_node:
+  ros__parameters:
+
+    use_sim_time: true
+    use_depth_registration: true
+    publish_imu_camera_tf: true
+    publish_world_to_map_tf: true
+
+    color_transport: compressed
+    depth_transport: raw
+
+    color_topic: /camera/color/image_raw
+    depth_topic: /camera/depth_registered/image_rect
+    camera_info_topic: /camera/color/camera_info
+    depth_camera_info_topic: /camera/depth/camera_info
+    depth_input_topic: /camera/depth/image_rect_raw
+    depth_registration_target_frame: camera_color_optical_frame
+    depth_registration_source_frame: camera_depth_optical_frame
+    imu_camera_parent_frame: xsens_imu_link
+    imu_camera_child_frame: camera_link
+    imu_camera_translation: [0.0456823, 0.0360948, -0.0745264]
+    imu_camera_rotation: [-0.00910219, 0.0119687, -0.0126518, 0.999804]
+    world_to_map_parent_frame: map
+    world_to_map_child_frame: world
+
+    #world_to_map_translation: [0.0, 0.0, 0.0]
+
+    world_to_map_translation: [1.6656, 1.8750, -0.5383] # Line
+
+    #world_to_map_translation: [1.5595, -1.9808, -0.5089] # XYZ-Rot-Obstacles
+
+    #world_to_map_translation: [0.8637, 1.7487, -0.5203] # Square-Shape
+
+    #world_to_map_translation: [2.3251, -1.9349, -0.5121] # Scene-Middle
+    #world_to_map_rotation: [0.01125, -0.00171, 0.28531, 0.95837] # Scene-Middle
+
+    #world_to_map_translation: [1.3032, -0.9345, -0.5131] # tour smooth takeoff
+
+    #world_to_map_translation: [-0.0784, 0.709, -0.5276] # Rotation-only
+
+    world_to_map_rotation: [0.0, 0.0, 0.0, 1.0]
+
+    world_frame_id: world
+    imu_frame_id_fallback: xsens_imu_link
+
+    imu_topic: /filtered_imu_xsens
+    imu_preint_topic: /filtered_imu_xsens
+    # Ground-truth pose topic to provide to metrics node
+    gt_topic: /Darknav/pose
